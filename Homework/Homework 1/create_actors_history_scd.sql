@@ -1,3 +1,5 @@
+
+-- TODO: Restructure tables and queries to account for Primary Keys
 CREATE TABLE actors_history_scd (
 	actor TEXT,
 	quality_class quality_class,
