@@ -1,6 +1,7 @@
 -- Create the films struct
 CREATE TYPE films AS (
 	film TEXT,
+	year INTEGER,
 	votes INTEGER,
 	rating REAL,
 	filmid TEXT
