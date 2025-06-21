@@ -1,6 +1,6 @@
-# <img src="./books.svg" alt="Stack of red books with a graduation cap on top, symbolizing education and achievement, set against a plain background" width="30" height="20" /> KPI and Experimentation
+# <img src="../books.svg" alt="Stack of red books with a graduation cap on top, symbolizing education and achievement, set against a plain background" width="30" height="20" /> KPI and Experimentation
 
-## <img src="./notes.svg" alt="Orange pencil lying diagonally on a white sheet of paper, representing note taking and documentation, with a clean and organized appearance" width="20" height="15" /> Decoding Business Success: Metrics, Growth Strategies and Collaborative Approaches Day 1 Lecture
+## <img src="../notes.svg" alt="Orange pencil lying diagonally on a white sheet of paper, representing note taking and documentation, with a clean and organized appearance" width="20" height="15" /> Decoding Business Success: Metrics, Growth Strategies and Collaborative Approaches Day 1 Lecture
 
 - Why should a data engineer develop good ***Key Performance Indicators (KPIs)***?
   - They impact business decision making
@@ -99,7 +99,7 @@
 - You can do so via batch ETLs
 - This is a common pattern in big tech for data engineers to own these
 
-## <img src="./question-and-answer.svg" alt="TTwo speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
+## <img src="../question-and-answer.svg" alt="TTwo speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
 - How do you plug metrics into experimentation frameworks?
 - What are the types of metrics?
@@ -115,6 +115,6 @@
 
 ---
 
-## <img src="./summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
+## <img src="../summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
 
 It is imperative to develop good KPIs because it directly impacts business decisions. There are several metrics that can be measured with experiments, and you want to carefully consider which ones you use. Log data during your experiments so you can analyze the P-value to check for statistical significance. When outliers are extreme, you can use winsorization to clip outliers to a less extreme value to avoid data skewing.

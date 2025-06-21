@@ -1,7 +1,7 @@
 
-# <img src="./books.svg" alt="Stack of red books with a graduation cap on top, symbolizing education and achievement, set against a plain background" width="30" height="20" /> KPI and Experimentation
+# <img src="../books.svg" alt="Stack of red books with a graduation cap on top, symbolizing education and achievement, set against a plain background" width="30" height="20" /> KPI and Experimentation
 
-## <img src="./notes.svg" alt="Orange pencil lying diagonally on a white sheet of paper, representing note taking and documentation, with a clean and organized appearance" width="20" height="15" /> KPIs and Experimentation: Leading and Lagging Metrics Day 2 Lecture
+## <img src="../notes.svg" alt="Orange pencil lying diagonally on a white sheet of paper, representing note taking and documentation, with a clean and organized appearance" width="20" height="15" /> KPIs and Experimentation: Leading and Lagging Metrics Day 2 Lecture
 
 ### Leading and Lagging Metrics
 
@@ -154,10 +154,10 @@ You can run experiments and analytics at each step of this funnel!
 
 Through every step of the funnel, ask "what's sparking joy or pain".
 
-![This One Sparks Joy](tumblr_e1cf59b2ddb94136f50b69ff6bc95a24_ad233526_640.gif)
+![This One Sparks Joy](../tumblr_e1cf59b2ddb94136f50b69ff6bc95a24_ad233526_640.gif)
 ![This One Does Not Spark Joy](https://64.media.tumblr.com/932a5f8808cfc10c13fda17915d89ec1/tumblr_pmndkcnrvy1vcqvzco3_640.gifv)
 
-## <img src="./question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
+## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
 - What type of metric is revenue commonly considered as?
 - Which metric is part of the input or leading indicators in a sales funnel?
@@ -172,6 +172,6 @@ Through every step of the funnel, ask "what's sparking joy or pain".
 
 ---
 
-## <img src="./summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
+## <img src="../summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
 
 Conversion rate represents the percentage of visitors who take the desired action. You can experiment with leading and lagging metrics both personally and professionally to optimize your business and growth. Leading metrics are quick flags that influnce future performance. Lagging metrics are the result of several processes. A lot of worthwhile effort is put into the process between the leading metric and the extreme lagging metric!
