@@ -97,7 +97,7 @@ Great for exploratory or executive dashboards!
 - How do you adjust the scale of a dimension?
 - How do you create a dashboard?
 - How do you annotate a chart?
-- What is the difference between interactive and executive dashboards?
+- What is the difference between exploratory and executive dashboards?
 - What is one of the challenges mentioned when dealing with a large number of referrers in data visualization?
 - How can you optimize a visual representation in Tableau when you have a dataset with many outliers?
 - What type of visualization was suggested to improve the clarity of a single line chart?
@@ -108,4 +108,4 @@ Great for exploratory or executive dashboards!
 
 When creating Tableau dashboards, you should always ask yourself what story are you trying to tell and how things are coming across. If needed, you can create calculated fields directly within Tableau, though this should happen upstream whenever possible. Certain items can be disabled from the filtered items by right clicking and choosing "exclude" in the dropdown menu.
 
-Executive dashboards are designed to provide high-level overviews of key metrics with minimal interaction, focusing on delivering clear and concise information efficiently to decision-makers. Interactive dashboards contain filters that may change the values of the other charts on the dashboard in order to provide a more interactive story.
+Executive dashboards are designed to provide high-level overviews of key metrics with minimal interaction, focusing on delivering clear and concise information efficiently to decision-makers. Exploratory dashboards contain filters that may change the values of the other charts on the dashboard in order to provide a more interactive story.
