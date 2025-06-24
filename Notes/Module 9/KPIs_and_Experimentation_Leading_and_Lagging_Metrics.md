@@ -3,159 +3,17 @@
 
 ## <img src="../notes.svg" alt="Orange pencil lying diagonally on a white sheet of paper, representing note taking and documentation, with a clean and organized appearance" width="20" height="15" /> KPIs and Experimentation: Leading and Lagging Metrics Day 2 Lecture
 
-### Leading and Lagging Metrics
-
-Ultimately, almost every metric you write should be correlated in some way with money or progress. Revenue is its own metric. As data engineers, every metric we provide should be linked to money, either in increasing revenue or decreasing cost.
-
-- Optimizing pipelines
-  - The data about the data you are creating is saving money! (i.e. supplying data about customer service that makes their process more efficient)
-- The revenue metric is slow-moving, i.e. a lagging metric because it *results from various preceding efforts and activities and is typically finalized after certain transactions are completed*.
-  - cost-saving metrics are also lagging metrics
-
-### Leading vs Lagging
-
-- Are we measuring inputs or output?
-  - Number of people who visit -> number of people who sign up -> number of people who buy
-    - In this funnel, there are two places you can lose people
-  - Input is visits
-  - People who buy impact the lagging metrics
-- Does our effort impact our output?
-- ***Leading Metrics*** provide immediate, actionable insights that can influence future performance
-- ***Lagging Metrics*** reflect results after they have occurred
-- Are inputs and outputs correlated?
-  - The ***conversion rate*** represents the percentage of visitors who take the desired action, such as making a purchase, after visiting a website or seeing an ad
-
-If you have a process in place and you have a bunch of inputs in place, those are your leading metrics.
-
-#### Leading Metric Example
-
-- Hours spent practicing SQL
-- Networking efforts
-
-#### Lagging Metric Example
-
-- Job offers received
-- Job success
-- Promotions
-- Extreme lagging metric: how many students got better jobs from what I taught them?
-
-#### Conversion Rate Example
-
-- Hours applying divided by job interviews
-  
-### Funnel Example
-
-#### Effort/learning
-
-- Experiment examples
-  - What should I learn?
-  - How should I learn it?
-- Common mistakes
-  - Tutorial hell
-  - Going too broad
-  - Not networking
-  - Networking only on LinkedIn
-
-#### Brand building/Networking
-
-- Experiment examples
-  - How should I market the skills I've learned?
-  - Who should I network with?
-- Common mistakes
-  - Applying only to jobs you're 100% qualified for
-  - Only filling out applications and not networking
-
-#### Job interview
-
-- Experiment examples
-  - Where should I apply?
-  - Where will increase my skills the most?
-- Common mistakes
-  - Not asking questions
-    - "What part of your job would you change if you could?"
-    - For managers: "If I fall behind on a project due to workload, how would you respond?"
-  
-#### Job success/Promotion
-
-- Experiment examples
-  - How do I take my job to the next level?
-  - How do I keep providing value?
-- Common mistakes
-  - Not recognizing unsupportive managers
-  - Only focusing on getting better at code
-  - Staying in a toxic job because of the pay
-  
-#### Help others/change world
-
-- Experiment examples
-  - How do I most effectively teach my mentees?
-- Common mistakes
-  - Not caring enough to help others (it's not about money, it's about impact!)
-
-### Product Analytics Example
-
-- The ***most extreme leading metric*** is ad spend on an impression
-- The ***most extreme lagging metric*** is a testimonial or a repeat purchase
-
-### The Overall UX Funnel That Runs the World
-
-You can run experiments and analytics at each step of this funnel!
-
-#### Top of Funnel
-
-- Impressions
-  - How many eyes can I get on what I'm building?
-  - Experiments:
-    - Channel tracking
-    - Cost per click
-    - Ad creatives
-    - Students learn something and are happy with the content they read. They sign up for a newsletter where there is a closer connection
-- Sign ups / Email acquisition
-  - Can I get a point of contact?
-  - Experiments:
-    - Landing page (i.e. the A/B testing with Statsig)
-    - Page speed
-    - Responsiveness
-    - When you buy the boot camp, you get immediate access to a huge content library.
-    - When you buy a boot camp, there is a delay in getting added to GitHub and Discord; students don't like that
-
-#### Middle of Funnel
-
-- Sign ups -> Purchases
-- Purchase
-  - How do I encourage people to buy?
-  - Experiments:
-    - Pricing structure
-    - Elasticities
-    - Pricing page
-
-#### Retention part of funnel
-
-- Purchase -> Engaged
-- Engaged / Retained
-  - How can I delight the people?
-  - Experiments:
-    - Onboarding
-    - Notifications
-    - Schedule
-    - Content
-
-#### Virtuous Cycle of Funnels
-
-- Retained -> Referral
-- Referral / Testimonial
-  - Can I create brand by word of mouth?
-  - Experiments:
-    - Notifications
-    - Incentives
-    - *Lifetime Value* (LTV)
-
-### Think Like a Product Manager
-
-Through every step of the funnel, ask "what's sparking joy or pain".
-
-![This One Sparks Joy](../tumblr_e1cf59b2ddb94136f50b69ff6bc95a24_ad233526_640.gif)
-![This One Does Not Spark Joy](https://64.media.tumblr.com/932a5f8808cfc10c13fda17915d89ec1/tumblr_pmndkcnrvy1vcqvzco3_640.gifv)
+| Concept                | Notes            |
+|---------------------|------------------|
+| **Leading and Lagging Metrics**  | Ultimately, almost every metric you write should be correlated in some way with money or progress. Revenue is its own metric. As data engineers, every metric we provide should be linked to money, either in increasing revenue or decreasing cost. <br><br> - Optimizing pipelines <br> &emsp;• The data about the data you are creating is saving money! (i.e. supplying data about customer service that makes their process more efficient) <br> - The revenue metric is slow-moving, i.e. a lagging metric because it *results from various preceding efforts and activities and is typically finalized after certain transactions are completed*. <br> &emsp;• cost-saving metrics are also lagging metrics|
+| **Leading vs Lagging**  | - Are we measuring inputs or output? <br> &emsp;• Number of people who visit -> number of people who sign up -> number of people who buy <br> &emsp;&emsp;• In this funnel, there are two places you can lose people <br>&emsp;• Input is visits <br>&emsp;• People who buy impact the lagging metrics <br>- Does our effort impact our output? <br>- ***Leading Metrics*** provide immediate, actionable insights that can influence future performance <br>- ***Lagging Metrics*** reflect results after they have occurred<br>- Are inputs and outputs correlated?<br>  &emsp;• The ***conversion rate*** represents the percentage of visitors who take the desired action, such as making a purchase, after visiting a website or seeing an ad <br> <br>If you have a process in place and you have a bunch of inputs in place, those are your leading metrics. |
+| **Leading Metric Example**  | - Hours spent practicing SQL <br>- Networking efforts |
+| **Lagging Metric Example**  | - Job offers received <br>- Job success <br>- Promotions <br>- Extreme lagging metric: how many students got better jobs from what I taught them?|
+| **Conversion Rate Example**  | - Hours applying divided by job interviews |
+| **Funnel Example**  | - **Effort/learning** <br> &emsp;• Experiment examples <br> &emsp;&emsp;• What should I learn?<br> &emsp;&emsp;• How should I learn it?<br> &emsp;• Common mistakes <br> &emsp;&emsp;• Tutorial hell<br> &emsp;&emsp;• Going too broad<br> &emsp;&emsp;• Not networking<br> &emsp;&emsp;• Networking only on LinkedIn <br>- **Brand building/Networking** <br> &emsp;• Experiment examples <br> &emsp;&emsp;• How should I market the skills I've learned?<br> &emsp;&emsp;• Who should I network with? <br> &emsp;• Common mistakes <br> &emsp;&emsp;• Applying only to jobs you're 100% qualified for<br> &emsp;&emsp;• Only filling out applications and not networking<br>- **Job interview**<br> &emsp;• Experiment examples <br> &emsp;&emsp;• Where should I apply?<br> &emsp;&emsp;• Where will increase my skills the most? <br> &emsp;• Common mistakes <br> &emsp;&emsp;• Not asking questions<br> &emsp;&emsp;&emsp;• "What part of your job would you change if you could?"<br> &emsp;&emsp;&emsp;• For managers: "If I fall behind on a project due to workload, how would you respond?"<br>- **Job success/Promotion** <br> &emsp;• Experiment examples <br> &emsp;&emsp;• How do I take my job to the next level?<br> &emsp;&emsp;• How do I keep providing value? <br> &emsp;• Common mistakes <br> &emsp;&emsp;• Not recognizing unsupportive managers<br> &emsp;&emsp;• Only focusing on getting better at code<br> &emsp;&emsp;• Staying in a toxic job because of the pay<br>- **Help others/change world** <br> &emsp;• Experiment examples <br> &emsp;&emsp;• How do I most effectively teach my mentees? <br> &emsp;• Common mistakes <br> &emsp;&emsp;• Not caring enough to help others (it's not about money, it's about impact!)|
+| **Product Analytics Example**  | - The ***most extreme leading metric*** is ad spend on an impression <br>- The ***most extreme lagging metric*** is a testimonial or a repeat purchase |
+| **The Overall UX Funnel That Runs the World**  | You can run experiments and analytics at each step of this funnel! <br><br>- **Top of Funnel** <br>&emsp;• *Impressions* <br>&emsp;&emsp;• How many eyes can I get on what I'm building? <br>&emsp;&emsp;• Experiments: <br>&emsp;&emsp;&emsp;• Channel tracking<br>&emsp;&emsp;&emsp;• Cost per click<br>&emsp;&emsp;&emsp;• Ad creatives<br>&emsp;&emsp;&emsp;• Students learn something and are happy with the content they read. They sign up for a newsletter where there is a closer connection <br>&emsp;• *Sign ups / Email acquisition* <br>&emsp;&emsp;• Can I get a point of contact? <br>&emsp;&emsp;• Experiments: <br>&emsp;&emsp;&emsp;• Landing page (i.e. the A/B testing with Statsig)<br>&emsp;&emsp;&emsp;• Page speed<br>&emsp;&emsp;&emsp;• When you buy the boot camp, you get immediate access to a huge content library.<br>&emsp;&emsp;&emsp;• When you buy a boot camp, there is a delay in getting added to GitHub and Discord; students don't like that<br><br>- **Middle of Funnel** <br>&emsp;• Sign ups -> Purchases<br>&emsp;• Purchases<br>&emsp;&emsp;• How do I encourage people to buy?<br>&emsp;&emsp;• Experiments: <br>&emsp;&emsp;&emsp;• Pricing structure<br>&emsp;&emsp;&emsp;• Elasticities<br>&emsp;&emsp;&emsp;• Pricing page<br><br>**Retention part of funnel** <br>&emsp;• Purchase -> Engaged<br>&emsp;• Purchases<br>&emsp;&emsp;• How can I delight the people?<br>&emsp;&emsp;• Experiments: <br>&emsp;&emsp;&emsp;• Onboarding<br>&emsp;&emsp;&emsp;• Notifications<br>&emsp;&emsp;&emsp;• Schedule<br>&emsp;&emsp;&emsp;• Content<br><br> **Virtuous Cycle of Funnels** <br>&emsp;• Retained -> Referral<br>&emsp;• Referral / Testimonial<br>&emsp;&emsp;• Can I create brand by word of mouth?<br>&emsp;&emsp;• Experiments: <br>&emsp;&emsp;&emsp;• Notifications<br>&emsp;&emsp;&emsp;• Incentives<br>&emsp;&emsp;&emsp;• *Lifetime Value* (LTV)|
+| **Think Like a Product Manager**  | Through every step of the funnel, ask "what's sparking joy or pain". <br><br>![This One Sparks Joy](../tumblr_e1cf59b2ddb94136f50b69ff6bc95a24_ad233526_640.gif) <br>![This One Does Not Spark Joy](https://64.media.tumblr.com/932a5f8808cfc10c13fda17915d89ec1/tumblr_pmndkcnrvy1vcqvzco3_640.gifv) |
 
 ## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
