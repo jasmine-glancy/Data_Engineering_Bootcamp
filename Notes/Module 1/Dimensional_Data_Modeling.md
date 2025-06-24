@@ -7,7 +7,7 @@
 | **Complex Data Types** | - Structs = nested tables <br> - Arrays = lists inside columns <br> - Compact but harder to query <br> - Use based on customer needs |
 | **Dimensions**         | - Are attributes of an entity (such as the user’s birthday, user’s favorite food, etc). <br> - Not critical to the identification of an entity, but help provide information <br> - Dimensions can be **slowly-changing** or **fixed**
 | **Slowly-Changing Dimensions**  | - Are *time-dependent* and can change as time goes on |
-| **Knowing Your Customer** | ***Think about the down-stream user!*** <br> Some of the biggest problems in data engineering occur when the data is modeled for the wrong customer. <br><br>- Data analysts/Data scientists <br>  &emsp;• Should be very easy to query. <br>  &emsp;• Not many complex data types <br>  &emsp;• Use flat data sets <br>  &emsp;• You don't want to make their job needlessly difficult!<br> - Other data engineers <br> &emsp;• Should be compact and probably harder to query. <br> &emsp;• Nested types are ok <br> &emsp;• Used to more complex data types<br> - ML models <br> &emsp;• Depends on the model and how it is trained <br> - Customers <br>&emsp;• Should be a very easy to interpret chart |
+| **Knowing Your Customer** | ***Think about the downstream user!*** <br> Some of the biggest problems in data engineering occur when the data is modeled for the wrong customer. <br><br>- Data analysts/Data scientists <br>  &emsp;• Should be very easy to query. <br>  &emsp;• Not many complex data types <br>  &emsp;• Use flat data sets <br>  &emsp;• You don't want to make their job needlessly difficult!<br> - Other data engineers <br> &emsp;• Should be compact and probably harder to query. <br> &emsp;• Nested types are ok <br> &emsp;• Used to more complex data types<br> - ML models <br> &emsp;• Depends on the model and how it is trained <br> - Customers <br>&emsp;• Should be a very easy to interpret chart |
 | **Master Data**  | - Data that other data engineers and other people in the company depend on <br>  &emsp;• Connected to other data sets |
 | **Online Transaction Processing (OLTP)**  | **IS A CONTINUUM** <br><br>- Optimizes for low-latency, low-volume series <br>- How software engineers do their data modeling to make their online systems run ***as quickly as possible*** <br> - MySQL and Postgres <br> - Require a lot of JOINS to get what you want <br> - ***Looking at one entity*** |
 | **Online Analytical Processing (OLAP)**  | **IS A CONTINUUM** <br><br>- Optimizes for large volume <br>- GROUP BY queries <br>- Minimizes JOINS <br> - Most common data modeling that data engineers use <br> - "Can we run a query that's fast and you don't need a lot of joins?" <br>- ***Looks at the entire data set*** or at least a chunk|
@@ -30,9 +30,15 @@
 - What is the purpose of the cumulative table design in data modeling?
 - In the context of dimensional data modeling, who would likely benefit the most from an OLAP cube?
 - What is a potential drawback of cumulative table design?
+- When should you use the most compact tables?
+- When should you use middle-ground tables?
 
 ---
 
 ## <img src="../summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
 
-xxx
+Complex data types like structs and arrays can be used depending on your customer's needs. Dimensions are attributes of an entity that aren't critical to the identification of an entity, but they can provide information. Dimensions can be either slowly-changing or fixed. When modeling your data, think about the downstream user.
+
+Online Transaction Processing (or OLTP) is a type of data modeling used by software engineers to make online systems run as quickly as possible. Online analytical processing optimizes for larger volume and is the most common data modeling that data engineers use. OLAP cubes are flattened versions of the data models that are used by data scientists and analysts. OLAP cubes provide an easy-to-use format for quick analytical queries without needing complex joins.
+
+Cumulative table design shows the entire history of yesterday and today. It allows for scalable queries, but it relies on yesterday's data for continuity, which can make parallel backfilling difficult. You should use the most compact tables when you want to avoid latency and have highly technical customers. If your consumers are other data engineers, middle-ground tables are fine. Run-length encoding compression nullifies the duplicate data, while storing the number of duplicates as well. Be careful, as Spark shuffle can ruin this!
