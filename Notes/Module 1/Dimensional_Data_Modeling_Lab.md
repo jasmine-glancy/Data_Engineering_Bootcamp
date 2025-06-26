@@ -5,21 +5,267 @@
 |---------------------|------------------|
 | **Goal**  | - Create a table with only one row per player <br>&emsp;• Each row should contain a player with an array of each of their seasons <br> &emsp;• If we joined the current `player_seasons` with a downstream table, it causes shuffling<br> &emsp;&emsp;• This is because `player_seasons` has multiple rows for each player<br> &emsp;• We remove the temporal component and push it to its own data type inside   |
 | **Method**  | - Look through the table and see what is changing <br> &emsp;• i.e. `player_name`, `draft_year`, etc <br>- Create a struct with `TYPE()`<br> &emsp;• Creates a new table that will include all of the columns at the player level so there is no duplication. <br> &emsp;• Include the array of season stats<br>- Create a `TABLE` <br>- Find the first year in the seasons  |
-| **Creating a Struct**  | <pre><code>CREATE TYPE season_stats (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;season INTEGER, <br><br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- Games played<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;gp INTEGER,<br><br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- Points<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;pts REAL,<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;reb REAL,<br><br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- Assist<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;ast REAL<br>)</code></pre> |
-| **Our Table**  | - Create a table with the values that do not change <br><br><pre><code>CREATE TABLE players (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;player_name TEXT, <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;height TEXT,<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;college TEXT,<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;country TEXT,<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;draft_year TEXT,<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;draft_round TEXT,<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;draft_number TEXT,<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- Insert the array<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;season_stats season_stats[],<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- We are developing this table <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- cumulatively! As we do the full <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- outer joins between the tables, <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- this current season will be <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- whatever the latest value in the <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;-- table is<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;current_season TEXT,<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;PRIMARY KEY(player_name, current_season) <br>)</code></pre> |
+| **Creating a Struct**  | - See [Creating a Struct](#creating-a-struct-code) below. |
+| **Our Table**  | - Create a table with the values that do not change <br> -See [Our Table](#our-table-code) below. |
 | **Finding the First Year In Seasons**  | - `SELECT MIN(season) FROM player_seasons;`  |
-| **Today/Yesterday Query**  | <pre><code>WITH yesterday AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * player<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE current_season = 1995<br>), <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; today AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * FROM player_seasons <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE season = 1996<br>) <br><br>SELECT * FROM today t FULL OUTER JOIN yesterday y <br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name<br></code></pre> - Gives us the cumulation between yesterday and today <br>- This query as written will return `NULL` for everything under yesterday because we haven't filled any information yet |
-| **Creating the Seed Query**  | <pre><code>WITH yesterday AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * player<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE current_season = 1995<br>), <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; today AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * FROM player_seasons <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE season = 1996<br>) <br><br>SELECT * FROM today t FULL OUTER JOIN yesterday y <br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name<br> SELECT <br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.height, y.height) AS height,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.college, y.college) AS college,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.country, y.country) AS country,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_year, y.draft_year) AS draft_year,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_round, y.draft_round) AS draft_round,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_number, y.draft_number) AS draft_number, <br><br>FROM today t FULL OUTER JOIN yesterday y<br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name</code></pre>- Currently, this only manages today's values<br>- Seed queries have an initial `NULL` value for yesterday when they are first started |
-| **Adding the Seasons Array**  | <pre><code>WITH yesterday AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * player<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE current_season = 1995<br>), <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; today AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * FROM player_seasons <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE season = 1996<br>) <br><br>SELECT * FROM today t FULL OUTER JOIN yesterday y <br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name<br> SELECT <br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.height, y.height) AS height,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.college, y.college) AS college,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.country, y.country) AS country,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_year, y.draft_year) AS draft_year,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_round, y.draft_round) AS draft_round,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_number, y.draft_number) AS draft_number, <br><br>-- Add the seasons array<br>CASE WHEN y.season_stats IS NULL <br><br>-- The array contains the values <br>-- mentioned in today's `season_stats`<br>-- when null<br>&emsp; THEN ARRAY[ROW(<br>&emsp;&emsp;&emsp;t.season,<br>&emsp;&emsp;&emsp;t.gp,<br>&emsp;&emsp;&emsp;t.pts,<br>&emsp;&emsp;&emsp;t.reb,<br>&emsp;&emsp;&emsp;t.ast,<br>&emsp;&emsp;&emsp;<br>-- :: casts the values to the struct type we defined earlier<br>)::season_stats] <br><br>-- Concat the array from today <br>-- if yesterday is not NULL <br>-- This also prevents writing "NULL"<br>-- to today's values if the player <br>-- isn't active anymore<br>WHEN t.season IS NOT NULL THEN y.season_stats \|\| ARRAY[ROW(<br>&emsp;&emsp;&emsp;t.season,<br>&emsp;&emsp;&emsp;t.gp,<br>&emsp;&emsp;&emsp;t.pts,<br>&emsp;&emsp;&emsp;t.reb,<br>&emsp;&emsp;&emsp;t.ast,<br>&emsp;&emsp;&emsp;-- :: casts the values to the struct type we defined earlier<br>)::season_stats]<br>ELSE y.season_stats <br>END AS season_stats, <br><br>FROM today t FULL OUTER JOIN yesterday y<br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name</code></pre> - This creates an array concat which slows the array of all the values<br>- This gives everyone a struct |
-| **Account for Current Season**  | <pre><code>-- Continued from previous query<br>WHEN t.season IS NOT NULL THEN y.season_stats \|\| ARRAY[ROW(<br>&emsp;&emsp;&emsp;t.season,<br>&emsp;&emsp;&emsp;t.gp,<br>&emsp;&emsp;&emsp;t.pts,<br>&emsp;&emsp;&emsp;t.reb,<br>&emsp;&emsp;&emsp;t.ast,<br><br>&emsp;&emsp;&emsp;-- :: casts the values to the struct<br>&emsp;&emsp;&emsp;-- type we defined earlier<br>)::season_stats]<br>ELSE y.season_stats <br>END AS season_stats, <br><br>-- Gives us our current season value<br>COALESCE(t.season, y.current_season + 1) AS current_season<br><br>FROM today t FULL OUTER JOIN yesterday y <br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name<br></code></pre><br>- NOTE:<pre><code><br>CASE WHEN t.season IS NOT NULL THEN t.season<br>&emsp;&emsp;ELSE y.current_season + 1<br>END</code></pre> is the same thing as what is written above! <br>- Full code: <pre><code>WITH yesterday AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * player<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE current_season = 1995<br>), <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; today AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * FROM player_seasons <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE season = 1996<br>) <br><br>SELECT * FROM today t FULL OUTER JOIN yesterday y <br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name<br> SELECT <br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.height, y.height) AS height,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.college, y.college) AS college,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.country, y.country) AS country,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_year, y.draft_year) AS draft_year,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_round, y.draft_round) AS draft_round,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_number, y.draft_number) AS draft_number, <br><br>-- Add the seasons array<br>CASE WHEN y.season_stats IS NULL <br><br>-- The array contains the values <br>-- mentioned in today's `season_stats`<br>-- when null<br>&emsp; THEN ARRAY[ROW(<br>&emsp;&emsp;&emsp;t.season,<br>&emsp;&emsp;&emsp;t.gp,<br>&emsp;&emsp;&emsp;t.pts,<br>&emsp;&emsp;&emsp;t.reb,<br>&emsp;&emsp;&emsp;t.ast,<br>&emsp;&emsp;&emsp;<br>-- :: casts the values to the struct type we defined earlier<br>)::season_stats] <br><br>-- Concat the array from today <br>-- if yesterday is not NULL <br>-- This also prevents writing "NULL"<br>-- to today's values if the player <br>-- isn't active anymore<br>WHEN t.season IS NOT NULL THEN y.season_stats \|\| ARRAY[ROW(<br>&emsp;&emsp;&emsp;t.season,<br>&emsp;&emsp;&emsp;t.gp,<br>&emsp;&emsp;&emsp;t.pts,<br>&emsp;&emsp;&emsp;t.reb,<br>&emsp;&emsp;&emsp;t.ast,<br>&emsp;&emsp;&emsp;-- :: casts the values to the struct type we defined earlier<br>)::season_stats]<br>ELSE y.season_stats <br>END AS season_stats, <br><br>-- Gives us our current season value<br>COALESCE(t.season, y.current_season + 1) AS current_season<br><br>FROM today t FULL OUTER JOIN yesterday y<br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name</code></pre> |
-| **Create the Pipeline!**  | - You can turn the query above into a pipeline with `INSERT INTO`. Full code: <br><pre><code>INSERT INTO players<br>WITH yesterday AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * player<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE current_season = 1995<br>), <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; today AS (<br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;SELECT * FROM player_seasons <br>&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;WHERE season = 1996<br>) <br><br>SELECT * FROM today t FULL OUTER JOIN yesterday y <br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name<br> SELECT <br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.height, y.height) AS height,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.college, y.college) AS college,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.country, y.country) AS country,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_year, y.draft_year) AS draft_year,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_round, y.draft_round) AS draft_round,<br>&emsp;&emsp;&emsp;&emsp;COALESCE(t.draft_number, y.draft_number) AS draft_number, <br><br>-- Add the seasons array<br>CASE WHEN y.season_stats IS NULL <br><br>-- The array contains the values <br>-- mentioned in today's `season_stats`<br>-- when null<br>&emsp; THEN ARRAY[ROW(<br>&emsp;&emsp;&emsp;t.season,<br>&emsp;&emsp;&emsp;t.gp,<br>&emsp;&emsp;&emsp;t.pts,<br>&emsp;&emsp;&emsp;t.reb,<br>&emsp;&emsp;&emsp;t.ast,<br>&emsp;&emsp;&emsp;<br>-- :: casts the values to the struct type we defined earlier<br>)::season_stats] <br><br>-- Concat the array from today <br>-- if yesterday is not NULL <br>-- This also prevents writing "NULL"<br>-- to today's values if the player <br>-- isn't active anymore<br>WHEN t.season IS NOT NULL THEN y.season_stats \|\| ARRAY[ROW(<br>&emsp;&emsp;&emsp;t.season,<br>&emsp;&emsp;&emsp;t.gp,<br>&emsp;&emsp;&emsp;t.pts,<br>&emsp;&emsp;&emsp;t.reb,<br>&emsp;&emsp;&emsp;t.ast,<br>&emsp;&emsp;&emsp;-- :: casts the values to the struct type we defined earlier<br>)::season_stats]<br>ELSE y.season_stats <br>END AS season_stats, <br><br>-- Gives us our current season value<br>COALESCE(t.season, y.current_season + 1) AS current_season<br><br>FROM today t FULL OUTER JOIN yesterday y<br>&emsp;&emsp; &emsp;&emsp; ON t.player_name = y.player_name</code></pre>-From here, you can load in each year by changing yesterday to 1996 and today as 1997<br>&emsp;• Rinse and repeat until the values are loaded <br>&emsp;• If you query `SELECT * FROM players WHERE current_season = 2001;`, you will be able to see each player's season stats. <br>&emsp;&emsp;• i.e. `{(1995,24,22.0,6.4,2.4), (2001,60,22.9,5.7,5.2)}` <br>- You can cumulate |
+| **Today/Yesterday Query**  |  - See [Today/Yesterday Query](#todayyesterday-query-code) below. <br>- Gives us the cumulation between yesterday and today <br>- This query as written will return `NULL` for everything under yesterday because we haven't filled any information yet | |
+| **Creating the Seed Query**  | - See [Creating the Seed Query](#creating-the-seed-query-code) below. <br>- Currently, this only manages today's values<br>- Seed queries have an initial `NULL` value for yesterday when they are first started|
+| **Adding the Seasons Array**  | See [Adding the Seasons Array](#adding-the-seasons-array-code) below. <br>- This creates an array concat which slows the array of all the values<br>- This gives everyone a struct |
+| **Account for Current Season**  | See [Account for Current Season](#account-for-current-season-code) below.<br>- NOTE: See [Current Season CASE](#current-season-case-code) below. <br>- Full code: See [Full Account for Current Season](#full-account-for-current-season-code) below. |
+| **Create the Pipeline!**  | See [Create the Pipeline](#create-the-pipeline-code) below.<br>- From here, you can load in each year by changing yesterday to 1996 and today as 1997<br>&emsp;• Rinse and repeat until the values are loaded <br>&emsp;• If you query `SELECT * FROM players WHERE current_season = 2001;`, you will be able to see each player's season stats. <br>&emsp;&emsp;• i.e. `{(1995,24,22.0,6.4,2.4), (2001,60,22.9,5.7,5.2)}` <br>- You can cumulate |
 | **Concept**  | - xxx <br>  &emsp;• xxx |
 | **Concept**  | - xxx <br>  &emsp;• xxx |
 | **Concept**  | - xxx <br>  &emsp;• xxx |
 | **Concept**  | - xxx <br>  &emsp;• xxx |
 | **Concept**  | - xxx <br>  &emsp;• xxx |
 
+### Creating a Struct Code
+```sql
+CREATE TYPE season_stats (
+    season INTEGER,
 
+    -- Games played
+    gp INTEGER,
+
+    -- Points
+    pts REAL,
+    reb REAL,
+
+    -- Assist
+    ast REAL
+)
+```
+
+### Our Table Code
+```sql
+CREATE TABLE players (
+    player_name TEXT,
+    height TEXT,
+    college TEXT,
+    country TEXT,
+    draft_year TEXT,
+    draft_round TEXT,
+    draft_number TEXT,
+    -- Insert the array
+    season_stats season_stats[],
+    -- We are developing this table cumulatively! As we do the full
+    -- outer joins between the tables, this current season will be
+    -- whatever the latest value in the table is
+    current_season TEXT,
+    PRIMARY KEY(player_name, current_season)
+)
+```
+
+### Today/Yesterday Query Code
+
+```sql
+WITH yesterday AS (
+    SELECT * FROM player
+    WHERE current_season = 1995
+), 
+today AS (
+    SELECT * FROM player_seasons
+    WHERE season = 1996
+)
+SELECT * FROM today t
+FULL OUTER JOIN yesterday y
+    ON t.player_name = y.player_name
+```
+
+### Creating the Seed Query Code
+```sql
+WITH yesterday AS (
+    SELECT * FROM player
+    WHERE current_season = 1995
+), 
+today AS (
+    SELECT * FROM player_seasons
+    WHERE season = 1996
+)
+SELECT * FROM today t
+FULL OUTER JOIN yesterday y
+    ON t.player_name = y.player_name
+SELECT
+    COALESCE(t.height, y.height) AS height,
+    COALESCE(t.college, y.college) AS college,
+    COALESCE(t.country, y.country) AS country,
+    COALESCE(t.draft_year, y.draft_year) AS draft_year,
+    COALESCE(t.draft_round, y.draft_round) AS draft_round,
+    COALESCE(t.draft_number, y.draft_number) AS draft_number
+FROM today t
+FULL OUTER JOIN yesterday y
+    ON t.player_name = y.player_name
+```
+
+### Adding the Seasons Array Code
+
+```sql
+WITH yesterday AS (
+    SELECT * FROM player
+    WHERE current_season = 1995
+), 
+today AS (
+    SELECT * FROM player_seasons
+    WHERE season = 1996
+)
+SELECT
+    COALESCE(t.height, y.height) AS height,
+    COALESCE(t.college, y.college) AS college,
+    COALESCE(t.country, y.country) AS country,
+    COALESCE(t.draft_year, y.draft_year) AS draft_year,
+    COALESCE(t.draft_round, y.draft_round) AS draft_round,
+    COALESCE(t.draft_number, y.draft_number) AS draft_number,
+    -- Add the seasons array
+    CASE
+        WHEN y.season_stats IS NULL THEN ARRAY[
+            ROW(
+                t.season,
+                t.gp,
+                t.pts,
+                t.reb,
+                t.ast
+            )::season_stats
+        ]
+        WHEN t.season IS NOT NULL THEN y.season_stats || ARRAY[
+            ROW(
+                t.season,
+                t.gp,
+                t.pts,
+                t.reb,
+                t.ast
+            )::season_stats
+        ]
+        ELSE y.season_stats
+    END AS season_stats
+FROM today t
+FULL OUTER JOIN yesterday y
+    ON t.player_name = y.player_name
+```
+
+### Account for Current Season Code
+```sql
+-- Continued from previous query
+CASE
+    WHEN t.season IS NOT NULL THEN y.season_stats || ARRAY[
+        ROW(
+            t.season,
+            t.gp,
+            t.pts,
+            t.reb,
+            t.ast
+        )::season_stats
+    ]
+    ELSE y.season_stats
+END AS season_stats,
+
+-- Gives us our current season value
+COALESCE(t.season, y.current_season + 1) AS current_season
+
+FROM today t
+FULL OUTER JOIN yesterday y
+    ON t.player_name = y.player_name
+```
+
+### Current Season CASE Code
+
+```sql
+CASE
+    WHEN t.season IS NOT NULL THEN t.season
+    ELSE y.current_season + 1
+END
+```
+
+### Full Account for Current Season Code
+
+```sql
+WITH yesterday AS (
+    SELECT * FROM player
+    WHERE current_season = 1995
+), 
+today AS (
+    SELECT * FROM player_seasons
+    WHERE season = 1996
+)
+SELECT
+    COALESCE(t.height, y.height) AS height,
+    COALESCE(t.college, y.college) AS college,
+    COALESCE(t.country, y.country) AS country,
+    COALESCE(t.draft_year, y.draft_year) AS draft_year,
+    COALESCE(t.draft_round, y.draft_round) AS draft_round,
+    COALESCE(t.draft_number, y.draft_number) AS draft_number,
+    -- Add the seasons array
+    CASE
+        WHEN y.season_stats IS NULL THEN ARRAY[
+            ROW(
+                t.season,
+                t.gp,
+                t.pts,
+                t.reb,
+                t.ast
+            )::season_stats
+        ]
+        WHEN t.season IS NOT NULL THEN y.season_stats || ARRAY[
+            ROW(
+                t.season,
+                t.gp,
+                t.pts,
+                t.reb,
+                t.ast
+            )::season_stats
+        ]
+        ELSE y.season_stats
+    END AS season_stats,
+    -- Gives us our current season value
+    COALESCE(t.season, y.current_season + 1) AS current_season
+FROM today t
+FULL OUTER JOIN yesterday y
+    ON t.player_name = y.player_name
+```
+
+### Create the Pipeline Code
+```sql
+INSERT INTO players
+WITH yesterday AS (
+    SELECT * FROM player
+    WHERE current_season = 1995
+), 
+today AS (
+    SELECT * FROM player_seasons
+    WHERE season = 1996
+)
+SELECT
+    COALESCE(t.height, y.height) AS height,
+    COALESCE(t.college, y.college) AS college,
+    COALESCE(t.country, y.country) AS country,
+    COALESCE(t.draft_year, y.draft_year) AS draft_year,
+    COALESCE(t.draft_round, y.draft_round) AS draft_round,
+    COALESCE(t.draft_number, y.draft_number) AS draft_number,
+    CASE
+        WHEN y.season_stats IS NULL THEN ARRAY[
+            ROW(
+                t.season,
+                t.gp,
+                t.pts,
+                t.reb,
+                t.ast
+            )::season_stats
+        ]
+        WHEN t.season IS NOT NULL THEN y.season_stats || ARRAY[
+            ROW(
+                t.season,
+                t.gp,
+                t.pts,
+                t.reb,
+                t.ast
+            )::season_stats
+        ]
+        ELSE y.season_stats
+    END AS season_stats,
+    COALESCE(t.season, y.current_season + 1) AS current_season
+FROM today t
+FULL OUTER JOIN yesterday y
+    ON t.player_name = y.player_name
+```
 
 ## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
