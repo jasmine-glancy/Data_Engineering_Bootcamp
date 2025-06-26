@@ -1,0 +1,50 @@
+# Ignore Python cache and virtual environments
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+.env
+venv/
+ENV/
+.venv/
+.obsidian/
+2025-06-25.md
+Untitled.canvas
+Untitled 1.canvas
+
+# Ignore Jupyter Notebook checkpoints
+.ipynb_checkpoints/
+
+# Ignore VSCode settings
+.vscode/
+
+# Ignore Mac system files
+.DS_Store
+
+# Ignore Windows system files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Ignore logs and temporary files
+*.log
+*.tmp
+*.swp
+
+# Ignore build and distribution folders
+build/
+dist/
+*.egg-info/
+
+# Ignore node modules (if using Node.js)
+node_modules/
+
+# Ignore personal notes exports
+*.pdf
+*.docx
+*.xlsx
+
+# Ignore backup files
+*~
+*.bak
