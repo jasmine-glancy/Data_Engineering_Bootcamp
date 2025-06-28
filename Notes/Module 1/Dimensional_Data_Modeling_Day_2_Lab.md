@@ -7,8 +7,8 @@
 | **Goal**  | - Take the table from lab 1 and turn it into a type 2 SCD<br>  &emsp;• Create an SCD table that tracks changes in 2 columns <br>- Create a table with no filter<br>- Code review: [Starting Point Updated Code](#starting-point-updated-code) |
 | **Creating players_scd**  | - [Players SCD](#players-scd-code) <br>  &emsp;• The two columns we are tracking are `scoring_class` and `is_active` <br>  &emsp;• These will change over time |
 | **Methodology**  | - Create players_scd <br>- Create a query that fills players_scd <br>- Take an existing SCD and incrementally build on top of it<br> &emsp;• We want to calculate the streak of how long they were in a current dimension<br> &emsp;&emsp;• We do this by looking at what the dimension's results were before using **window functions** |
-| **Window Functions**  | - [Window Function Example](#window-function-example) <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
+| **Window Functions**  | - [Window Function Example](#window-function-example) |
+| **The Full players_scd Fill Query**  | - [Fill The SCD Table](#fill-the-scd-table) |
 | **Concept**  | - xxx <br>  &emsp;• xxx |
 | **Concept**  | - xxx <br>  &emsp;• xxx |
 | **Concept**  | - xxx <br>  &emsp;• xxx |
@@ -133,20 +133,103 @@ CREATE TABLE players_scd (
 
     -- Think of this as the "date" partition
     current_season INTEGER,
-    PRIMARY KEY(player_name, current_season)
+    PRIMARY KEY(player_name, start_season)
 );
 ```
 
 ### Window Function Example
 
 ```sql
-SELECT 
-    player_name,
-    scoring_class,
-    LAG(scoring_class, 1), OVER (PARTITION BY player_name ORDER BY current_season) AS previous_scoring_class,    
-    LAG(is_active, 1), OVER (PARTITION BY player_name ORDER BY current_season) AS previous_is_active,
-    is_active,
-FROM players
+-- Create a CTE
+WITH with_previous AS(
+    SELECT 
+        player_name,
+        current_season,
+        scoring_class,
+        LAG(scoring_class, 1), OVER (PARTITION BY player_name ORDER BY current_season) AS previous_scoring_class,    
+        LAG(is_active, 1), OVER (PARTITION BY player_name ORDER BY current_season) AS previous_is_active,
+        is_active,
+    FROM players
+
+    -- These results can be filtered further 
+    WHERE current_season <= 2021
+)
+    -- Create a new CTE
+    with_indicators AS (
+        SELECT *,
+        -- Create an indicator of whether or not the columns changed
+            CASE 
+                WHEN scoring_class <> previous_scoring_class THEN 1 
+                WHEN is_active <> previous_is_active THEN 1 
+                ELSE 0 
+            END AS change_indicator
+        FROM with_previous;
+    )
+    -- Sum the changes via another window function
+    with_streaks AS (
+        SELECT *,
+            SUM(change_indicator) 
+                OVER (PARTITION BY player_name ORDER BY current_season) AS streak_indicator
+        FROM with_indicators
+    )
+    -- We can aggregate on streak_indicator with the following
+    -- This is our SCD table!
+    SELECT 
+            player_name, 
+            streak_identifier,
+            scoring_class,
+            is_active,
+            MIN(current_season) AS start_season,
+            MAX(current_season) AS end_season
+
+            -- This hard-coded value can be changed
+            2021 AS current_season
+        FROM with_streaks
+    GROUP BY player_name, streak_identifier, is_active, scoring_class
+    ORDER BY player_name
+```
+
+### Fill The SCD Table
+
+```sql
+INSERT INTO players_scd
+WITH with_previous AS(
+    SELECT 
+        player_name,
+        current_season,
+        scoring_class,
+        LAG(scoring_class, 1), OVER (PARTITION BY player_name ORDER BY current_season) AS previous_scoring_class,    
+        LAG(is_active, 1), OVER (PARTITION BY player_name ORDER BY current_season) AS previous_is_active,
+        is_active,
+    FROM players
+    WHERE current_season <= 2021
+)
+    with_indicators AS (
+        SELECT *,
+            CASE 
+                WHEN scoring_class <> previous_scoring_class THEN 1 
+                WHEN is_active <> previous_is_active THEN 1 
+                ELSE 0 
+            END AS change_indicator
+        FROM with_previous;
+    )
+    with_streaks AS (
+        SELECT *,
+            SUM(change_indicator) 
+                OVER (PARTITION BY player_name ORDER BY current_season) AS streak_indicator
+        FROM with_indicators
+    )
+    SELECT 
+            player_name, 
+            streak_identifier,
+            scoring_class,
+            is_active,
+            MIN(current_season) AS start_season,
+            MAX(current_season) AS end_season
+            2021 AS current_season
+        FROM with_streaks
+    GROUP BY player_name, streak_identifier, is_active, scoring_class
+    ORDER BY player_name
 ```
 
 ## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
