@@ -9,16 +9,8 @@
 | **Methodology**  | - Create players_scd <br>- Create a query that fills players_scd <br>- Take an existing SCD and incrementally build on top of it<br> &emsp;• We want to calculate the streak of how long they were in a current dimension<br> &emsp;&emsp;• We do this by looking at what the dimension's results were before using **window functions** |
 | **Window Functions**  | - [Window Function Example](#window-function-example) |
 | **The Full players_scd Fill Query**  | - [Fill The SCD Table](#fill-the-scd-table) |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
-| **Concept**  | - xxx <br>  &emsp;• xxx |
+| **Cons of the First SCD Table As Written**  | - Expensive parts of the query <br>  &emsp;• The two window functions before you aggregate<br>- Think about how things function! <br>- This query is ***more prone to out of memory exceptions*** and ***SKU***<br>  &emsp;• If you have some dimensions in your data set that are not as slowly-changing as other ones, then you will get a lot of streaks for that specific dimension<br> &emsp;&emsp;• This blows up the cardinality of the SCD table results, which **slows it down** <br> &emsp;&emsp;• This table is better with roughly the same amount of slowly changing dimensions <br>- ***Think about how much data you are working with!*** Not ideal for very large data sets |
+| **Another Way To Write SCD Tables**  | - [Second Way To Write An SCD](#second-way-to-write-an-scd) <br>  &emsp;• Incrementally processes data <br> &emsp;• **Assumes scoring_class and is_active are never null!**<br>&emsp;&emsp;• If they are, this query can inappropriately filter out data<br> &emsp;• This query works better in a lot of cases because it is querying a lot less data <br>&emsp;&emsp;• However, there is a sequential problem because each step depends on the previous step, making backfilling difficult|
 
 ### Starting Point Updated Code
 
@@ -159,6 +151,7 @@ WITH with_previous AS(
         SELECT *,
         -- Create an indicator of whether or not the columns changed
             CASE 
+                -- When scoring_class does not equal previous_scoring_class
                 WHEN scoring_class <> previous_scoring_class THEN 1 
                 WHEN is_active <> previous_is_active THEN 1 
                 ELSE 0 
@@ -232,12 +225,128 @@ WITH with_previous AS(
     ORDER BY player_name
 ```
 
+### Second Way To Write An SCD
+
+```sql
+
+-- Create a type for your array later
+CREATE TYPE scd_type AS (
+    scoring_class scoring_class,
+    is_active BOOLEAN,
+    start_season INTEGER,
+    end_season INTEGER
+);
+
+-- Goal: See if things have changed from season to season
+WITH last_season_scd AS (
+    -- Shows only one record per player
+    SELECT * FROM players_scd
+    WHERE current_season = 2021
+    AND end_season = 2021
+),
+    historical_scd AS (
+        SELECT 
+            player_name,
+            scoring_class,
+            is_active,
+            start_season,
+            end_season
+        FROM players_scd
+        WHERE current_season = 2021
+        AND end_season < 2021
+    ),
+        this_season_data AS (
+            SELECT * FROM players
+            WHERE current_season = 2022
+        ),
+            unchanged_records AS (
+                SELECT
+                    ts.player_name,
+                    ts.scoring_class,
+                    ts.is_active,
+                    ls.start_season,
+                    ts.current_season AS end_season
+                FROM this_season_data ts
+                    JOIN last_season_data ls
+                    ON ls.player_name = ts.player_name
+                WHERE ts.scoring_class = ls.scoring_class
+                AND ts.is_active = ls.is_active
+            ),
+                -- You want to use an array or struct to make one into two 
+                -- records when a change happens. You still need both records!
+
+                changed_records AS (
+                    SELECT
+                        ts.player_name,
+                        -- This UNNEST outputs (rank, t/f, year, year)
+                        UNNEST(ARRAY[
+                            ROW(
+                                -- Grab all of the old records
+                                ls.scoring_class,
+                                ls.is_active,
+                                ls.start_season,
+                                ls.end_season
+                            )::scd_type,
+                            ROW(
+                                ts.scoring_class,
+                                ts.is_active,
+                                ts.current_season,
+                                ts.current_season
+                            )::scd_type,
+                        ]) AS records
+                    FROM this_season_data ts
+                        -- Add a left join vs the regular join
+                        -- from unchanged_records
+                        LEFT JOIN last_season_data ls
+                        ON ls.player_name = ts.player_name
+
+                    WHERE (ts.scoring_class <> ls.scoring_class
+                    OR ts.is_active <> ls.is_active)
+                ),
+                -- Outputs all players with any players with changes
+                unnested_changed_records AS (
+                    SELECT 
+                        player_name,
+                        (records::scd_type).scoring_class, 
+                        (records::scd_type).is_active, 
+                        (records::scd_type).start_season, 
+                        (records::scd_type).end_season
+                    FROM changed_records
+                ),
+                new_records AS (
+                    SELECT 
+                        ts.player_name,
+                        ts.scoring_class,
+                        ts.is_active,
+                        ts.current_season AS start_season,
+                        ts.current_season AS end_season,
+                    FROM this_season_data ts
+                    LEFT JOIN last_season_scd ls
+                        ON ts.player_name = ls.player_name
+                    WHERE ls.player_name IS NULL
+                )
+
+    SELECT * FROM historical_scd
+    UNION ALL
+    SELECT * FROM unchanged_records
+    UNION ALL
+    SELECT * FROM unnested_changed_records
+    UNION ALL
+    SELECT * FROM new_records
+```
+
 ## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
-- xxx
+- What is the primary goal of the Dimensional Data Modeling Day 2 Lab?
+- Why is Slowly Changing Dimension Type 2 considered the gold standard?
+- What technologies were mentioned for use in the lab?
+- In the process described, what is a significant disadvantage of the original query approach?
+- What is suggested as a more efficient way to handle incremental data changes in the lab?
 
 ---
 
 ## <img src="../summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
 
-xxx
+The lab focused on converting existing datasets into a Slowly Changing Demension (SCD) Type 2 model, which helps in tracking historical data efficiently. SCD Type 2 models are considered the gold standard because they maintain a full history of data changes over time, which is crucial for accurate tracking and reporting. Docker and Postgres are used in the lab to set up the environment and manage the databases required for the hands-on excercises.
+
+The initial query approach can lead to out of memory exceptions and SKU, especially with the data that doesn't change slowly, due to the comprehensive scans involved. A more efficient way to handle incremental data changes involves focusing only on the new and change records. This approach avoids processing unnecessary historical data, improving performance.
