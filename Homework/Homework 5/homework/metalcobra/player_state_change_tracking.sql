@@ -1,0 +1,6 @@
+-- TODO: Write a query that does state change tracking for players 
+    -- TODO: A player entering the league should be New
+    -- TODO: A player leaving the league should be Retired
+    -- TODO: A player staying in the league should be Continued Playing
+    -- TODO: A player that comes out of retirement should be Returned from Retirement
+    -- TODO: A player that stays out of the league should be Stayed Retired
