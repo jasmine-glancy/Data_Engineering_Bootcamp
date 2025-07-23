@@ -242,10 +242,18 @@ ORDER BY 4 DESC
 
 ## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
-- xxx
+- What is the principal purpose of identifying the 'grain' in fact data modeling?
+- What issue was highlighted when initially querying the 'game details' table?
+- Why is it necessary to denormalize data in fact data modeling?
+- Why was adding player names to the fact table justified, according to the lab discussion?
+- How does the lab suggest handling columns like 'minutes' that are initially in an inconvenient format?
 
 ---
 
 ## <img src="../summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
 
-xxx
+Identifying the grain in fact data modeling helps determine the table's unique identifier to ensure each record is unique. The lab highlighted the presence of duplicate records in the table, which were identified through aggregation and filtering.
+
+Denormalizing data makes it easier to query, particularly for analytical purposes, by reducing the necessity of complex `JOIN`s. Including player names in the lab helped improve the readability of the data queries and the results for data analysts and end-users.
+
+To handle columns like the "minutes" column in the lab, strings can be converted into numerical fractions to facilitate calculations such as rates and enhance analytical processes.
