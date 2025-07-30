@@ -21,7 +21,7 @@
 
 ### Creating a Struct Code
 ```sql
-CREATE TYPE season_stats (
+CREATE TYPE season_stats AS (
     season INTEGER,
 
     -- Games played
@@ -39,6 +39,8 @@ CREATE TYPE season_stats (
 ### Our Table Code
 ```sql
 CREATE TABLE players (
+
+CREATE TABLE players (
     player_name TEXT,
     height TEXT,
     college TEXT,
@@ -53,8 +55,9 @@ CREATE TABLE players (
     -- We are developing this table cumulatively! As we do 
     -- the full outer joins between the tables, this current
     -- season will be whatever the latest value in the table is
-    current_season TEXT,
+    current_season INTEGER,
     PRIMARY KEY(player_name, current_season)
+)
 )
 ```
 
