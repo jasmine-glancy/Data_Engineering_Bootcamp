@@ -1,4 +1,7 @@
 -- TODO: Write a query that uses window functions on game_details 
 -- to find out the following:
     -- What is the most games a team has won in a 90 game stretch?
+        -- TODO: Mark each win
+        -- TODO: SUM wins over a 90 game window 
+        -- TODO: Find the maximum value of wins in 90 games for each team
     -- How many games in a row did LeBron James score over 10 points a game?
