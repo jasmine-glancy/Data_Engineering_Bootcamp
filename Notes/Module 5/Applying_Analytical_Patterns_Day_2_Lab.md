@@ -19,7 +19,7 @@
 
 ```sql
 WITH combined AS (
-    SELECT d.*, we.*
+    SELECT d.*, we.*,
 
     -- Reduce the cardinality of referer
     CASE 
