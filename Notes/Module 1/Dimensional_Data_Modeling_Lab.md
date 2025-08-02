@@ -39,8 +39,6 @@ CREATE TYPE season_stats AS (
 ### Our Table Code
 ```sql
 CREATE TABLE players (
-
-CREATE TABLE players (
     player_name TEXT,
     height TEXT,
     college TEXT,
@@ -58,14 +56,13 @@ CREATE TABLE players (
     current_season INTEGER,
     PRIMARY KEY(player_name, current_season)
 )
-)
 ```
 
 ### Today/Yesterday Query Code
 
 ```sql
 WITH yesterday AS (
-    SELECT * FROM player
+    SELECT * FROM players
     WHERE current_season = 1995
 ), 
 today AS (
@@ -80,7 +77,7 @@ FULL OUTER JOIN yesterday y
 ### Creating the Seed Query Code
 ```sql
 WITH yesterday AS (
-    SELECT * FROM player
+    SELECT * FROM players
     WHERE current_season = 1995
 ), 
 today AS (
@@ -106,7 +103,7 @@ FULL OUTER JOIN yesterday y
 
 ```sql
 WITH yesterday AS (
-    SELECT * FROM player
+    SELECT * FROM players
     WHERE current_season = 1995
 ), 
 today AS (
@@ -185,7 +182,7 @@ END
 
 ```sql
 WITH yesterday AS (
-    SELECT * FROM player
+    SELECT * FROM players
     WHERE current_season = 1995
 ), 
 today AS (
@@ -232,9 +229,10 @@ FULL OUTER JOIN yesterday y
 
 ### Create the Pipeline Code
 ```sql
+
 INSERT INTO players
 WITH yesterday AS (
-    SELECT * FROM player
+    SELECT * FROM players
     WHERE current_season = 1995
 ), 
 today AS (
@@ -242,6 +240,7 @@ today AS (
     WHERE season = 1996
 )
 SELECT
+    COALESCE(t.player_name, y.player_name) AS player_name,
     COALESCE(t.height, y.height) AS height,
     COALESCE(t.college, y.college) AS college,
     COALESCE(t.country, y.country) AS country,
@@ -273,6 +272,7 @@ SELECT
 FROM today t
 FULL OUTER JOIN yesterday y
     ON t.player_name = y.player_name;
+
 ```
 
 ### Unnested Code
@@ -323,7 +323,7 @@ CREATE TABLE players (
 
 
 WITH yesterday AS (
-    SELECT * FROM player
+    SELECT * FROM players
     WHERE current_season = 1995
 ), 
 today AS (
