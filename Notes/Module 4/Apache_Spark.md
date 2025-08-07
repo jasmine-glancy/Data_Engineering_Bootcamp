@@ -31,10 +31,16 @@ df.withColumn("salt_random_column", (rand * n).cast(IntegerType))
 
 ## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
-- xxx
+- What is the primary advantage of Apache Spark over its predecessors like Hadoop MapReduce?
+- In Apache Spark, what role does the 'Driver' play?
+- Which of the following is a best practice when setting the 'executor memory' for Apache Spark?
+- When is it preferable to use a 'Broadcast Hash Join' in Spark?
+- Which feature in Spark 3 helps in automatically managing skew issues during execution?
 
 ---
 
 ## <img src="../summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
 
-xxx
+Compared to its predecessors (i.e. Hadoop and MapReduce), Apache Spark minimizes disk input/output by storing intermediate data. Hadoop and MapReduce requires writing after every step, which makes Spark faster and more efficient. In Apache Spark, the driver acts as the coach, managign plans and executions. The driver constructs the logical plan and coordinates execution by assigning tasks to executors. It's important to find a balance to prevent memory waste while also avoiding "out of memory" errors.  The best practice when setting the executor memory for Apache Spark is to adjust it based on a trial to get the optimum executor memory with minimal overhead.
+
+It's preferable to use a broadcast hash join when one side of the join is small. In such cases, the small dataset can be broadcasted to all executors, eliminating the need for a full shuffle. `spark.sql.adaptive.enabled` is a Spark 3 feature that allows Spark to automatically handle skewed partitions effectively by analyzing and adjusting execution plans.
