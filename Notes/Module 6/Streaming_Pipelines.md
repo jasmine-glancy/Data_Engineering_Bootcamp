@@ -20,10 +20,16 @@
 
 ## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
-- xxx
+- Which technology is primarily used for a continuous processing engine in streaming pipelines?
+- What is a key characteristic of a streaming pipeline?
+- How does Apache Flink handle out of order events?
+- What is a benefit of batch processing over streaming processing in terms of data quality?
+- When is streaming processing essential over other methods?
 
 ---
 
 ## <img src="../summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
 
-xxx
+Apache Flink is the best example of a streaming continuous processing engine, which processes data events immediately as they are generated. Streaming pipelines process data in a low-latency manner, meaning data is processed shortly after generation. This distinguishes them from traditional batch processing.
+
+Apache Flink uses watermarks to define windows of time during which out of order events can be corrected, ensuring the accurate ordering of data. Batch processing has clear steps where data quality checks can easily be inserted, unlike streaming, which is continuous without distinct steps. Streaming processing is crucial for situations like fraud detection where immediate data processing is necessary to prevent or mitigate issues quickly.
