@@ -5,10 +5,6 @@ import json
 import requests
 from pyflink.table import EnvironmentSettings, DataTypes, TableEnvironment, StreamTableEnvironment
 
-# TODO: Create a Flink job that sessionizes the input data 
-    ## by IP address and host
-    
-# TODO: Use a 5 minute gap
 
 def create_processed_events_sink_kafka(t_env):
     table_name = "raw_events_kafka"
@@ -20,7 +16,7 @@ def create_processed_events_sink_kafka(t_env):
     sink_ddl = f"""
         CREATE TABLE {table_name} (
             ip VARCHAR,
-            event_timestamp DATETIME,
+            event_timestamp TIMESTAMP(3),
             referrer VARCHAR,
             host VARCHAR,
             url VARCHAR,
@@ -42,7 +38,7 @@ def create_processed_events_sink_kafka(t_env):
 
 
 def create_processed_events_sink_postgres(t_env):
-    table_name = 'processed_events'
+    table_name = "processed_events"
     sink_ddl = f"""
         CREATE TABLE {table_name} (
             ip VARCHAR,
@@ -63,6 +59,27 @@ def create_processed_events_sink_postgres(t_env):
     t_env.execute_sql(sink_ddl)
     return table_name
 
+def create_user_sessions_sink_postgres(t_env):
+    table_name = "user_sessions"
+    sink_ddl = f"""
+        CREATE TABLE {table_name} (
+            ip VARCHAR,
+            host VARCHAR,
+            event_timestamp TIMESTAMP(3),
+            session_start TIMESTAMP(3),
+            session_end TIMESTAMP(3)
+            event_count INTEGER
+        ) WITH (
+            'connector' = 'jdbc',
+            'url' = '{os.environ.get("POSTGRES_URL")}',
+            'table-name' = '{table_name}',
+            'username' = '{os.environ.get("POSTGRES_USER", "postgres")}',
+            'password' = '{os.environ.get("POSTGRES_PASSWORD", "postgres")}',
+            'driver' = 'org.postgresql.Driver'
+        );
+    """
+    t_env.execute_sql(sink_ddl)
+    return table_name
 
 class GetLocation(ScalarFunction):
     def eval(self, ip_address):
@@ -133,7 +150,33 @@ def log_processing():
     settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
     t_env = StreamTableEnvironment.create(env, environment_settings=settings)
     t_env.create_temporary_function("get_location", get_location)
+        
+    # TODO: Create a Flink job that sessionizes the input data 
+        ## by IP address and host    
+    
     try:
+        # Try to create a user session
+        source_table = create_events_source_kafka(t_env)
+        postgres_sink = create_user_sessions_sink_postgres(t_env)
+        print("Looking into Postgres...")
+        
+        t_env.execute_sql(
+            f"""
+                SELECT
+                    SESSION_START(event_timestamp, INTERVAL '5' MINUTE) AS session_start,
+                    SESSION_END(event_timestamp), INTERVAL '5' MINUTE) AS session_end,
+                    COUNT(*) AS event_count
+                FROM {source_table}
+                GROUP BY
+                    user_id,
+                    SESSION(event_timestamp), INTERVAL '5' MINUTE);
+            """
+        ).wait()
+        
+    except Exception as e:
+        print("Creating session failed: ", str(e))
+    try:
+        
         # Try to create the Kafka table
         source_table = create_events_source_kafka(t_env)
         postgres_sink = create_processed_events_sink_postgres(t_env)
@@ -148,11 +191,12 @@ def log_processing():
                     host,
                     url,
                     get_location(ip) AS geodata
-                FROM {source_table}
+                FROM {source_table};
             """
         ).wait()
     except Exception as e:
         print("Writing records from Kafka to JDBC failed: ", str(e))
-        
+
+
 if __name__ == "__main__":
     log_processing()
