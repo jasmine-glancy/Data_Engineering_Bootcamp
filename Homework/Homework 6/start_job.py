@@ -150,9 +150,7 @@ def log_processing():
     settings = EnvironmentSettings.new_instance().in_streaming_mode().build()
     t_env = StreamTableEnvironment.create(env, environment_settings=settings)
     t_env.create_temporary_function("get_location", get_location)
-        
-    # TODO: Create a Flink job that sessionizes the input data 
-        ## by IP address and host    
+    
     
     try:
         # Try to create a user session
@@ -168,7 +166,8 @@ def log_processing():
                     COUNT(*) AS event_count
                 FROM {source_table}
                 GROUP BY
-                    user_id,
+                    ip,
+                    host,
                     SESSION(event_timestamp), INTERVAL '5' MINUTE);
             """
         ).wait()
