@@ -161,14 +161,16 @@ def log_processing():
         t_env.execute_sql(
             f"""
                 SELECT
+                    ip,
+                    host,
                     SESSION_START(event_timestamp, INTERVAL '5' MINUTE) AS session_start,
-                    SESSION_END(event_timestamp), INTERVAL '5' MINUTE) AS session_end,
+                    SESSION_END(event_timestamp, INTERVAL '5' MINUTE) AS session_end,
                     COUNT(*) AS event_count
                 FROM {source_table}
                 GROUP BY
                     ip,
                     host,
-                    SESSION(event_timestamp), INTERVAL '5' MINUTE);
+                    SESSION(event_timestamp, INTERVAL '5' MINUTE);
             """
         ).wait()
         

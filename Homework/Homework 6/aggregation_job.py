@@ -1,8 +1,8 @@
 import os
 from pyflink.datastream import StreamExecutionEnvironment
-from pyflink.table import EnvironmentSettings, DataTypes, TableEnvironment, StreamTableEnvironment
+from pyflink.table import EnvironmentSettings, StreamTableEnvironment
 from pyflink.table.expressions import lit, col
-from pyflink.table.window import Tumble
+from pyflink.table.window import Session
 
 def create_aggregated_events_sink_postgres(t_env):
     table_name = "processed_events_aggregated"
@@ -13,26 +13,6 @@ def create_aggregated_events_sink_postgres(t_env):
             num_events BIGINT
         ) WITH (
             'connector' = 'jdbc',
-            'url' = '{os.environ.get("POSTGRES_URL")}',
-            'table-name' = '{table_name}',
-            'username' = '{os.environ.get("POSTGRES_USER", "postgres")}',
-            'password' = '{os.environ.get("POSTGRES_PASSWORD", "postgres")}',
-            'driver' = 'org.postgresql.Driver'
-        );
-    """
-    t_env.execute_sql(sink_ddl)
-    return table_name
-
-def create_aggregated_events_referrer_sink_postgres(t_env):
-    table_name = "processed_events_aggregated_source"
-    sink_ddl = f"""
-        CREATE TABLE {table_name} (
-            event_hour TIMESTAMP(3),
-            host VARCHAR,
-            referrer VARCHAR,
-            num_hits BIGINT
-        ) WITH (
-            'connector' = 'jdbc'
             'url' = '{os.environ.get("POSTGRES_URL")}',
             'table-name' = '{table_name}',
             'username' = '{os.environ.get("POSTGRES_USER", "postgres")}',
@@ -74,15 +54,6 @@ def create_processed_events_source_kafka(t_env):
     t_env.execute_sql(sink_ddl)
     return table_name
 
-
-# TODO: Answer these questions:
-
-    # TODO: What is the average number of web events of a session 
-        # from a user on Tech Creator?
-    
-    # TODO: Compare results between different hosts 
-        # (zachwilson.techcreator.io, zachwilson.tech, lulu.techcreator.io)
-
 def log_aggregation():
     # Sets up the execution environment
     env = StreamExecutionEnvironment.get_execution_environment()
@@ -95,41 +66,51 @@ def log_aggregation():
     
     try:
         # Create the Kafka table
-        source_table = create_aggregated_events_sink_postgres(t_env)
-        
+        source_table = create_processed_events_source_kafka(t_env)
         aggregated_table = create_aggregated_events_sink_postgres(t_env)
-        aggregated_sink_table = create_aggregated_events_referrer_sink_postgres(t_env)
-        t_env.from_path(source_table)\
-            .window(
-            Tumble.over(lit(5).minutes).on(col("window_timestamp")).alias("w")
-        ).group_by(
-            col("w"),
-            col("host")
-        ) \
-            .select(
-                    col("w").start.alias("event_hour"),
+        
+            
+        # Perform aggregations via a session
+        session_window = t_env.from_path(source_table).window(
+                # Define a session window with a gap of 5 minutes
+                Session.with_gap(lit(5).minutes).on("window_timestamp").alias("w")
+            )\
+                .group_by(
+                    col("ip"),
                     col("host"),
-                    col("host").count.alias("num_hits")
-            ) \
-            .execute_insert(aggregated_table)
+                    col("w")
+                )\
+                    .select(
+                        # Count events for each session
+                        col("ip"),
+                        col("host"),
+                        col("w").start.alias("session_start"),
+                        col("w").start.alias("session_end"),
+                        col("*").count.alias("session_event_count")
+                    )
+                    
+        # TODO: Handle errors
+        # Create a temporary view
+        t_env.create_temporary_view("sessionized", session_window)
+        
+        # Average session event count per host
+        avg_per_host = t_env.from_path("sessionized") \
+            .where(col("host").isin(
+                "zachwilson.techcreator.io",
+                "zachwilson.tech",
+                "lulu.techcreator.io"
+            )) \
+                .group_by(col("host")) \
+                    .select(
+                        col("host"),
+                        col("session_event_count").avg.alias("avg_events_per_session")
+                    )
 
-        t_env.from_path(source_table).window(
-            # TODO: Use session windows for session-based metrics.
-            Tumble.over(lit(5).minutes).on(col("window_timestamp")).alias("w")
-        ).group_by(
-            col("w"),
-            col("host"),
-            col("referrer")
-        ) \
-            .select(
-            col("w").start.alias("event_hour"),
-            col("host"),
-            col("referrer"),
-            col("host").count.alias("num_hits")
-        ) \
-            .execute_insert(aggregated_sink_table) \
-            .wait()
-
+        # TODO: Handle errors
+        # Write the results to the sink tables
+        aggregated_table = create_aggregated_events_sink_postgres(t_env)
+        avg_per_host.execute_insert(aggregated_table).wait()
+        
     except Exception as e:
         print("Writing records from Kafka to JDBC failed:", str(e))
 
