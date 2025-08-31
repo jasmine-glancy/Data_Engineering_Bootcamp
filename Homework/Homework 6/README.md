@@ -15,10 +15,38 @@ In order to run these scripts, please note you'll need to install the following 
     a. Please install using guide found in the [Data Engineer Handbook](https://github.com/DataExpert-io/data-engineer-handbook/tree/main/intermediate-bootcamp/materials/1-dimensional-data-modeling)
 
 3. Python 3.11 or higher (found [on Python.org](https://www.python.org/downloads/))
+4. Make (recommended)
+
+    On most Linux distributions and macOS, make is typically pre-installed by default. To check if make is installed on your system, you can run the `make --version` command in your terminal or command prompt. If it's installed, it will display the version information.
+
+    Otherwise, you can try following the instructions below, or you can just copy+paste the commands from the Makefile into your terminal or command prompt and run manually.
+
+    ```shell
+    # On Ubuntu or Debian:
+    sudo apt-get update
+    sudo apt-get install build-essential
+
+    # On CentOS or Fedora:
+    sudo dnf install make
+
+    # On macOS:
+    xcode-select --install
+
+    # On windows:
+    choco install make # uses Chocolatey, https://chocolatey.org/install
+    ```
 
 ### Setting up Kafka and Flink
 
 1. Clone the [Data Engineering Handbook](https://github.com/DataExpert-io/data-engineer-handbook/tree/main) repository
+
+    ```shell
+    git clone https://github.com/DataExpert-io/data-engineer-handbook.git
+
+    # Navigate to the repository on your computer
+    cd bootcamp/materials/4-apache-flink-training
+    ```
+
 2. Go to the [Apache Flink Training](https://github.com/DataExpert-io/data-engineer-handbook/tree/main/intermediate-bootcamp/materials/4-apache-flink-training) folder
 3. Set up your .env file according to the steps [below](#setting-up-the-env-file)
 4. Navigate to the `4-apache-flink-training` chapter of the data-engineer-handbook within your terminal
@@ -65,12 +93,75 @@ Utilizing environmental variables helps keep information safe. We can do this wi
 
 ## Running the Scripts
 
-TODO: Provide a step-by-step guide on how to run the scripts
+1. Build the Docker image and deploy the services in the docker-compose.yml file, including the PostgreSQL database and Flink cluster. This will (should) also create the sink table, processed_events, where Flink will write the Kafka messages to.
+
+    ```shell
+    make up
+
+    # if you dont have make, you can run:
+    # docker compose --env-file flink-env.env up --build --remove-orphans  -d
+    ```
+
+    Wait until the Flink UI is running at http://localhost:8081/ before proceeding to the next step.
+
+    ***Note:*** the first time you build the Docker image it can take anywhere from 5 to 30 minutes. Future builds should only take a few second, assuming you haven't deleted the image since.
+
+    Docker will automatically start up the job manager and task manager services after the image is built. This will take a minute or so. Check the container logs in Docker desktop and when you see the line below, you know you're good to move onto the next step.
+
+    ```plaintext
+    taskmanager Successful registration at resource manager akka.tcp://flink@jobmanager:6123/user/rpc/resourcemanager_* under registration id <id_number>
+    ```
+
+    Make sure to run sql/init.sql on the postgres database from Week 1 and 2 to have the processed_events table appear
+
+2. When the Flink cluster is up and running, you can run the PyFlink job!
+
+    ```shell
+    make job
+
+    # if you dont have make, you can run:
+    # docker-compose exec jobmanager ./bin/flink run -py /opt/src/job/start_job.py -d
+    ```
+
+    After about a minute, you should see a prompt that the job's been submitted (e.g., `Job has been submitted with JobID <job_id_number>`). Now go back to the [Flink UI](http://localhost:8081/#/job/running) to see the job running!
+
+3. Trigger an event from the Kafka source by visiting https://bootcamp.techcreator.io/ and then query the `processed_events` table in your postgreSQL database to confirm the data/events were added.
+
+    ```shell
+    make psql
+    # or see `Makefile` to execute the command manually in your terminal or command prompt
+
+    # expected output:
+    docker exec -it eczachly-flink-postgres psql -U postgres -d postgres
+    psql (15.3 (Debian 15.3-1.pgdg110+1))
+    Type "help" for help.
+
+    postgres=# SELECT COUNT(*) FROM processed_events;
+    count 
+    -------
+    739
+    (1 row)
+    ```
+
+4. When you're done, you can stop and/or clean up the Docker resources by running the commands below.
+
+    ```shell
+    make stop # to stop running services in docker compose
+    make down # to stop and remove docker compose services
+    make clean # to remove the docker container and dangling images
+    ```
+
+    ❕ Note the /var/lib/postgresql/data directory inside the PostgreSQL container is mounted to the ./postgres-data directory on your local machine. This means the data will persist across container restarts or removals, so even if you stop/remove the container, you won't lose any data written within the container.
 
 ## Verifying Results
 
-TODO: Advise user how to verify the results
+In order to verify the Flink output against the source of truth, please use the queries in the `cross-verify.sql` file.
+
+1. The file first counts the number of events in a single session per IP address and host
+2. The second query averages the number of session events for specific hosts.
 
 ## Analysis and Insights
 
-TODO: interpret and report results
+At the time of writing this, there are two free bootcamps currently being offered by the DataExpert.io umbrella (with a third on the way!). With that in mind, it makes sense to me that `www.fullstackexpert.io` (#1), `learn.dataexpert.io` (#2), and `www.dataexpert.io` (#3) are at the top of the list. From what I know about the websites, these are where folks complete the lessons, so the active events are likely generated mostly from current students.
+
+The Cyber Instructor is coming out with a bootcamp that begins in September 2025, so `codingbootcamp.thecyberinstructor.com` is currently at the middle of the list. It was really interesting to plug in my own IP address and see my own stats!
