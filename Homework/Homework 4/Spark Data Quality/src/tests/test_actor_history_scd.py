@@ -26,8 +26,3 @@ def test_actor_scd_generation(spark):
 
     expected_df = spark.createDataFrame(expected_data)
     assert_df_equality(actual_df, expected_df)
-# TODO: Create tests in src/tests folder with fake input and 
-    # expected output data for actor history scd
-
-# TODO: Create tests in src/tests folder with fake input and 
-    # expected output data for host activity datelist
