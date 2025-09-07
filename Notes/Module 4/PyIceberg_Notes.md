@@ -2,6 +2,8 @@
 
 Have you ever read Spark code before? If not, it may look alien! This guide is a compilation of notes taken while reading the PyIceberg Guides that were helpfully written by the team at [DataExpert.io](dataexpert.io). Please check them out!
 
+Additionally, referenced the [Apache Spark Documentation](https://spark.apache.org/docs/0.6.0/).
+
 ## <img src="../notes.svg" alt="Orange pencil lying diagonally on a white sheet of paper, representing note taking and documentation, with a clean and organized appearance" width="20" height="15" /> Getting Started
 
 This guide demonstrates writing to Iceberg tables using PyIceberg.
@@ -15,7 +17,7 @@ from pyiceberg.catalog import load_catalog
 catalog = load_catalog("default")
 ```
 
-### Imports
+### Checking PyIcberg Version
 
 ```python
 from pyiceberg import __version__
@@ -123,7 +125,7 @@ df
 ### Creating Histograms
 
 ```python
-# Creates and displays a histogram plot of the values in fair_amount
+# Creates and displays a histogram plot of the values in fare_amount
 df.hist(column="fare_amount")
 
 import numpy as np
@@ -229,10 +231,14 @@ table.overwrite(df)
 
 ## <img src="../question-and-answer.svg" alt="Two speech bubbles, one with a large letter Q and the other with a large letter A, representing a question and answer exchange in a friendly and approachable style" width="35" height="28" /> Cues
 
-- xxx
+- What are namespaces?
+- What are the pros of namespaces?
+- How do you write tables to Iceberg?
 
 ---
 
 ## <img src="../summary.svg" alt="Rolled parchment scroll with visible lines, symbolizing a summary or conclusion, placed on a neutral background" width="30" height="18" /> Summary
 
-xxx
+If an object such as a table, view, or fuction exists, a namespace must also exist and be turned by the descovery method. For example, if table a.b.t exists, `listNamespaces()` method must return ["a"] in the result array. Namespaces prevent naming conflicts and *are required for table creation in Iceberg*. Additionally, namespaces enable better data governance by helping with permissions, auditing, and managing access at a group level.
+
+To write tables to Iceberg, you must use PyIceberg to connect to the catalog where the tables are being tracked. From there, PyArrow is used to load a Parquet file into memory so PyIceberg can write this data to an Iceberg table.
